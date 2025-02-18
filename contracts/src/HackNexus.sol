@@ -11,10 +11,11 @@ contract HackNexus is ERC721, Ownable {
 
     string public hackathonName;
     string public hackathonDate;
-    string public hackathonVenue;
+    string public latitude;
+    string public longitude;
     string public totalPrizePool;
 
-    string public svgImage;
+    string public imageURL;
 
     uint256 public tokenCounter;
 
@@ -37,20 +38,22 @@ contract HackNexus is ERC721, Ownable {
         string memory symbol,
         string memory _hackathonName,
         string memory _hackathonDate,
-        string memory _hackathonVenue,
+        string memory _latitude,
+        string memory _longitude,
         string memory _totalPrizePool,
         string[] memory _trackNames,
         string[] memory _trackBounties,
-        string memory _svgImage,
+        string memory _imageURL,
         address _owner  
     ) ERC721(name, symbol) Ownable(_owner) {
         require(_trackNames.length == _trackBounties.length, "Tracks and bounties length mismatch");
 
         hackathonName = _hackathonName;
         hackathonDate = _hackathonDate;
-        hackathonVenue = _hackathonVenue;
+        latitude = _latitude;
+        longitude = _longitude;
         totalPrizePool = _totalPrizePool;
-        svgImage = _svgImage;
+        imageURL = _imageURL;
 
         for (uint256 i = 0; i < _trackNames.length; i++) {
             tracks.push(Track(_trackNames[i], _trackBounties[i]));
@@ -65,51 +68,34 @@ contract HackNexus is ERC721, Ownable {
         tokenLinks[tokenId] = Links(_githubLink, _youtubeLink);
     }
 
+    function _baseURI() internal pure override returns (string memory) {
+        return "data:application/json;base64,";
+    }
+
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        // Base64 encode the stored SVG image.
-        string memory imageData = string(
-            abi.encodePacked("data:image/svg+xml;base64,", Base64.encode(bytes(svgImage)))
-        );
-
-        string memory tracksJSON = "[";
-        for (uint256 i = 0; i < tracks.length; i++) {
-            tracksJSON = string(
-                abi.encodePacked(
-                    tracksJSON,
-                    i == 0 ? "" : ",",
-                    '{"trackName": "',
-                    tracks[i].name,
-                    '", "bounty": "',
-                    tracks[i].bounty,
-                    '"}'
-                )
-            );
-        }
-        tracksJSON = string(abi.encodePacked(tracksJSON, "]"));
-
-        // Construct the metadata JSON.
-        bytes memory json = abi.encodePacked(
-            '{',
-                '"name": "', hackathonName, ' Participation NFT #', tokenId.toString(), '",',
-                '"description": "Participation NFT for hackathon ', hackathonName,
-                    '. Date: ', hackathonDate,
-                    ', Venue: ', hackathonVenue,
-                    ', Total Prize Pool: ', totalPrizePool, '",',
-                '"image": "', imageData, '",',
-                '"attributes": [',
-                    '{ "trait_type": "GitHub", "value": "', tokenLinks[tokenId].github, '" },',
-                    '{ "trait_type": "YouTube", "value": "', tokenLinks[tokenId].youtube, '" },',
-                    '{ "trait_type": "Hackathon Name", "value": "', hackathonName, '" },',
-                    '{ "trait_type": "Hackathon Date", "value": "', hackathonDate, '" },',
-                    '{ "trait_type": "Venue", "value": "', hackathonVenue, '" },',
-                    '{ "trait_type": "Total Prize Pool", "value": "', totalPrizePool, '" },',
-                    '{ "trait_type": "Tracks", "value": ', tracksJSON, ' }',
-                ']',
-            '}'
+        string memory imageURI = string(
+            abi.encodePacked("data:image/svg+xml;base64,", Base64.encode(bytes(imageURL)))
         );
 
         return string(
-            abi.encodePacked("data:application/json;base64,", Base64.encode(json))
+            abi.encodePacked(
+                _baseURI(),
+                Base64.encode(
+                    bytes(
+                        abi.encodePacked(
+                            '{"name":"',
+                            hackathonName, ' Participation NFT #', tokenId.toString(),
+                            '", "description":"Participation NFT for hackathon ', hackathonName, '", ',
+                            '"attributes": [',
+                                '{"trait_type": "Hackathon Name", "value": "', hackathonName, '"},',
+                                '{"trait_type": "Hackathon Date", "value": "', hackathonDate, '"}',
+                            '], "image":"',
+                            imageURI,
+                            '"}'
+                        )
+                    )
+                )
+            )
         );
     }
 }

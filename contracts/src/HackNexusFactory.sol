@@ -12,7 +12,8 @@ contract HackNexusFactory is Ownable {
         address hackathonAddress;
         string hackathonName;
         string hackathonDate;
-        string hackathonVenue;
+        string latitude;
+        string longitude;
     }
 
     mapping(uint256 => Hackathon) public hackathons;
@@ -34,7 +35,8 @@ contract HackNexusFactory is Ownable {
         string memory symbol,
         string memory _hackathonName,
         string memory _hackathonDate,
-        string memory _hackathonVenue,
+        string memory _latitude,
+        string memory _longitude,
         string memory _totalPrizePool,
         string[] memory _trackNames,
         string[] memory _trackBounties,
@@ -46,7 +48,8 @@ contract HackNexusFactory is Ownable {
             symbol,
             _hackathonName,
             _hackathonDate,
-            _hackathonVenue,
+            _latitude,
+            _longitude,
             _totalPrizePool,
             _trackNames,
             _trackBounties,

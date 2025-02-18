@@ -11,7 +11,8 @@ contract HackNexus is ERC721, Ownable {
 
     string public hackathonName;
     string public hackathonDate;
-    string public hackathonVenue;
+    string public latitude;
+    string public longitude;
     string public totalPrizePool;
 
     string public imageURL;
@@ -37,7 +38,8 @@ contract HackNexus is ERC721, Ownable {
         string memory symbol,
         string memory _hackathonName,
         string memory _hackathonDate,
-        string memory _hackathonVenue,
+        string memory _latitude,
+        string memory _longitude,
         string memory _totalPrizePool,
         string[] memory _trackNames,
         string[] memory _trackBounties,
@@ -48,7 +50,8 @@ contract HackNexus is ERC721, Ownable {
 
         hackathonName = _hackathonName;
         hackathonDate = _hackathonDate;
-        hackathonVenue = _hackathonVenue;
+        latitude = _latitude;
+        longitude = _longitude;
         totalPrizePool = _totalPrizePool;
         imageURL = _imageURL;
 

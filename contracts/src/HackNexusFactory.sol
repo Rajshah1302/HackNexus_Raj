@@ -63,7 +63,8 @@ contract HackNexusFactory is Ownable {
         hackathon.hackathonAddress = address(newHackathon);
         hackathon.hackathonName = _hackathonName;
         hackathon.hackathonDate = _hackathonDate;
-        hackathon.hackathonVenue = _hackathonVenue;
+        hackathon.latitude = _latitude;
+        hackathon.longitude = _longitude;
 
         creatorToHackathons[msg.sender].push(address(newHackathon));
 

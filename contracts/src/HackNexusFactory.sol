@@ -30,7 +30,7 @@ contract HackNexusFactory is Ownable {
 
     constructor(address _initialOwner) Ownable(_initialOwner) { }
 
-    function createHackathonNFT(
+    function hostHackathon(
         string memory name,
         string memory symbol,
         string memory _hackathonName,

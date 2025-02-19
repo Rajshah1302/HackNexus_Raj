@@ -1,6 +1,7 @@
 import Button from "@/components/Button";
 import LogoImg from "@/assets/nexusLogo.png";
 import Image from "next/image";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 export const Header = () => {
   return (
@@ -23,24 +24,27 @@ export const Header = () => {
           </div>
           <div className="hidden md:block">
             <nav className="flex gap-8 text-sm">
-              <a href="/dashboard" className="text-white/70 hover:text-white transition">
+              <a
+                href="/dashboard"
+                className="text-white/70 hover:text-white transition"
+              >
                 Dashboard
               </a>
-              <a href="/home" className="text-white/70 hover:text-white transition">
+              <a
+                href="/home"
+                className="text-white/70 hover:text-white transition"
+              >
                 Explore Hack
               </a>
-              <a href="/groups" className="text-white/70 hover:text-white transition">
+              <a
+                href="/groups"
+                className="text-white/70 hover:text-white transition"
+              >
                 Options
               </a>
             </nav>
           </div>
-          <div className="flex gap-4 items-center">
-            <Button>Try Now!</Button>
-            {/* Replace the Menu icon with text or a different icon */}
-            <span className="md:hidden text-white text-sm font-semibold">
-              Menu
-            </span>
-          </div>
+          <ConnectButton />
         </div>
       </div>
     </header>

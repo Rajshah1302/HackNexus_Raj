@@ -4,9 +4,15 @@ import React, { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { getPublicClient } from "@wagmi/core";
 import { useRouter } from "next/navigation";
+
+// If you're using lucide-react icons, import the arrow icon:
+import { ArrowUpRight } from "lucide-react";
+
+// If you're using shadcn's Card components, keep them imported:
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+
 import { HackNexusFactoryAbi } from "@/utlis/contractsABI/HackNexusFactoryAbi";
 import { HackNexusAbi } from "@/utlis/contractsABI/HackNexusAbi";
 import { HackNexusFactoryAddress } from "@/utlis/addresses";
@@ -37,10 +43,8 @@ export default function AllHackathonsPage() {
       setLoading(true);
       setError(null);
 
-      // 1. Get the public client
       const publicClient = getPublicClient(config as any, { chainId });
 
-      // 2. Call getHackathonAddresses to get array of addresses
       const hackathonAddresses = (await publicClient.readContract({
         address: HackNexusFactoryAddress[chainId] as `0x${string}`,
         abi: HackNexusFactoryAbi,
@@ -48,11 +52,7 @@ export default function AllHackathonsPage() {
         args: [userAddress],
       })) as `0x${string}[]`;
 
-      console.log("User Address:", userAddress);
-      console.log("Hackathon Addresses:", hackathonAddresses);
-
       const hackathonDataPromises = hackathonAddresses.map(async (hackAddr) => {
-        console.log("Reading hackathon at:", hackAddr);
         try {
           const hackathonName = (await publicClient.readContract({
             address: hackAddr,
@@ -96,9 +96,7 @@ export default function AllHackathonsPage() {
         (h) => h !== null
       ) as HackathonData[];
 
-      // Force a new array reference
       setHackathons([...validHackathons]);
-      console.log("Valid Hackathons:", validHackathons);
     } catch (err) {
       console.error("Error fetching hackathons:", err);
       setError("Failed to fetch hackathons. Please try again later.");
@@ -107,7 +105,6 @@ export default function AllHackathonsPage() {
     }
   };
 
-  // Fetch hackathons on mount and whenever the user address changes
   useEffect(() => {
     if (userAddress) {
       fetchHackathons();
@@ -115,30 +112,20 @@ export default function AllHackathonsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userAddress]);
 
-  // For debugging: log whenever hackathons state updates
-  useEffect(() => {
-    console.log("Hackathons state updated:", hackathons);
-  }, [hackathons]);
-
-  // Separate hackathons into upcoming vs. past based on hackathonDate.
-  // If the date is invalid, we'll assume it's upcoming.
+  // Separate hackathons into upcoming vs. past
   const now = new Date();
   const upcomingHackathons = hackathons.filter((hack) => {
     const hackDate = new Date(hack.hackathonDate);
-    if (isNaN(hackDate.getTime())) {
-      return true;
-    }
+    if (isNaN(hackDate.getTime())) return true; // treat invalid date as upcoming
     return hackDate >= now;
   });
   const pastHackathons = hackathons.filter((hack) => {
     const hackDate = new Date(hack.hackathonDate);
-    if (isNaN(hackDate.getTime())) {
-      return false;
-    }
+    if (isNaN(hackDate.getTime())) return false;
     return hackDate < now;
   });
 
-  // Sort upcoming (earlier first) and past (most recent first)
+  // Sort them
   upcomingHackathons.sort(
     (a, b) =>
       new Date(a.hackathonDate).getTime() - new Date(b.hackathonDate).getTime()
@@ -148,124 +135,159 @@ export default function AllHackathonsPage() {
       new Date(b.hackathonDate).getTime() - new Date(a.hackathonDate).getTime()
   );
 
-  // Navigate to the hackathon details page
   const handleLearnMore = (hackAddr: string) => {
     router.push(`/hackathons/${hackAddr}`);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Loading hackathons...</p>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <p className="text-black">Loading hackathons...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-red-500">
+      <div className="min-h-screen flex items-center justify-center bg-white text-red-500">
         {error}
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-7xl p-8">
-      {/* Heading and tabs */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-4">Events</h1>
-        <div className="flex space-x-6 text-lg">
-          <Button variant="ghost" className="px-0">
-            All
-          </Button>
-          <Button variant="ghost" className="px-0">
-            Hackathons
-          </Button>
-          <Button variant="ghost" className="px-0">
-            Summits
-          </Button>
+    <div className="min-h-screen bg-white text-black">
+      <div className="mx-auto max-w-7xl p-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-4">Events</h1>
+          <div className="flex space-x-6 text-lg">
+            <Button
+              variant="ghost"
+              className="px-0 text-black hover:bg-gray-100"
+            >
+              All
+            </Button>
+            <Button
+              variant="ghost"
+              className="px-0 text-black hover:bg-gray-100"
+            >
+              Hackathons
+            </Button>
+            <Button
+              variant="ghost"
+              className="px-0 text-black hover:bg-gray-100"
+            >
+              Summits
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* UPCOMING HACKATHONS */}
-      <section className="mb-12">
-        <h2 className="text-xl font-bold mb-4">Upcoming</h2>
-        {upcomingHackathons.length === 0 ? (
-          <p className="text-gray-600">No upcoming hackathons</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {upcomingHackathons.map((hack) => (
-              <Card
-                key={hack.address}
-                className="relative overflow-hidden bg-white dark:bg-zinc-900 transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10 cursor-pointer"
-              >
-                <CardHeader className="border-b border-gray-200 dark:border-zinc-800 pb-3">
-                  <CardTitle className="text-gray-900 dark:text-zinc-100">
-                    {hack.hackathonName}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+        {/* UPCOMING HACKATHONS */}
+        <section className="mb-12">
+          <h2 className="text-xl font-bold mb-4">Upcoming</h2>
+          {upcomingHackathons.length === 0 ? (
+            <p className="text-gray-600">No upcoming hackathons</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {upcomingHackathons.map((hack) => (
+                <Card
+                  key={hack.address}
+                  className="border border-black rounded-lg p-4 bg-white"
+                >
+                  <CardHeader className="p-0">
+                    <div className="flex items-center justify-between">
+                      <Label className="px-2 py-1 bg-[#E2F8E7] text-[#10743F] text-xs rounded-full font-medium">
+                        HACKATHON
+                      </Label>
+                      {/* You could add a logo/icon on the right if you want */}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-0 mt-4">
+                    <CardTitle className="text-lg font-bold">
+                      {hack.hackathonName}
+                    </CardTitle>
+                    {/* Example: If you have a start & end date separately, display them. 
+                        Otherwise, just show hack.hackathonDate directly. */}
+                    <div className="mt-2 inline-flex items-center space-x-2">
+                      <div className="flex items-center space-x-1 bg-[#F5F5F5] rounded-md px-2 py-1 text-sm">
+                        <span>{hack.hackathonDate}</span>
+                      </div>
+                      {/* If you had "startDate -> endDate" you could do something like:
+                          <span className="text-sm text-gray-500">→</span>
+                          <div className="flex items-center space-x-1 bg-[#F5F5F5] ...">
+                            <span>END DATE</span>
+                          </div>
+                      */}
+                    </div>
+
+                    {/* Coordinates (latitude, longitude) if you want to display them */}
+                    <p className="text-sm text-gray-800 mt-2">
+                      {hack.latitude}, {hack.longitude}
+                    </p>
+
+                    {/* Learn More button at bottom */}
+                    <button
+                      onClick={() => handleLearnMore(hack.address)}
+                      className="mt-4 w-full flex items-center justify-between 
+                                 bg-[#FAEAD5] hover:bg-[#f5e0c3] 
+                                 rounded-md px-3 py-2 text-sm font-medium 
+                                 text-black transition"
+                    >
+                      Learn More
+                      <ArrowUpRight className="w-4 h-4" />
+                    </button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* PAST HACKATHONS */}
+        <section>
+          <h2 className="text-xl font-bold mb-4">Past</h2>
+          {pastHackathons.length === 0 ? (
+            <p className="text-gray-600">No past hackathons</p>
+          ) : (
+            <div className="space-y-4">
+              {pastHackathons.map((hack) => (
+                <div
+                  key={hack.address}
+                  className="border border-black rounded-lg p-4 bg-white"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="font-semibold text-lg">
+                      {hack.hackathonName}
+                    </p>
+                    <Label className="px-2 py-1 bg-[#F5F5F5] text-black text-xs rounded-full font-medium">
                       HACKATHON
                     </Label>
-                    <span className="text-sm text-zinc-500">
-                      {hack.latitude}, {hack.longitude}
-                    </span>
                   </div>
-                  <p className="text-sm text-gray-800 dark:text-gray-200">
+                  <p className="text-sm text-gray-700 mb-2">
                     {hack.hackathonDate}
                   </p>
-                  <Button
-                    variant="outline"
-                    className="mt-2"
-                    onClick={() => handleLearnMore(hack.address)}
-                  >
-                    Learn More
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* PAST HACKATHONS */}
-      <section>
-        <h2 className="text-xl font-bold mb-4">Past</h2>
-        {pastHackathons.length === 0 ? (
-          <p className="text-gray-600">No past hackathons</p>
-        ) : (
-          <div className="space-y-4">
-            {pastHackathons.map((hack) => (
-              <div
-                key={hack.address}
-                className="flex items-center justify-between border-b border-gray-200 dark:border-zinc-800 py-3"
-              >
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-zinc-100">
-                    {hack.hackathonName}
+                  <p className="text-sm text-gray-700">
+                    {hack.latitude}, {hack.longitude}
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {hack.hackathonDate}
-                  </p>
+                  <div className="mt-4 flex items-center justify-end">
+                    <button
+                      onClick={() => handleLearnMore(hack.address)}
+                      className="inline-flex items-center justify-between 
+                                 bg-[#FAEAD5] hover:bg-[#f5e0c3] 
+                                 rounded-md px-3 py-2 text-sm font-medium 
+                                 text-black transition"
+                    >
+                      View Details
+                      <ArrowUpRight className="w-4 h-4 ml-2" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Label className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">
-                    HACKATHON
-                  </Label>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleLearnMore(hack.address)}
-                  >
-                    View Details
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

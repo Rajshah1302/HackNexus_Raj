@@ -40,7 +40,7 @@ contract HackNexusFactory is Ownable {
         string memory _totalPrizePool,
         string[] memory _trackNames,
         string[] memory _trackBounties,
-        string memory _svgImage
+        string memory _imageURL
     ) external returns (address) {
         
         HackNexus newHackathon = new HackNexus(
@@ -53,7 +53,7 @@ contract HackNexusFactory is Ownable {
             _totalPrizePool,
             _trackNames,
             _trackBounties,
-            _svgImage,
+            _imageURL,
             msg.sender 
         );
 

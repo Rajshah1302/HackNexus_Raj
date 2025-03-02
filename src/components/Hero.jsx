@@ -89,7 +89,7 @@ export const Hero = () => {
           <Link href="/home">
             <Button>Explore Nexus</Button>
           </Link>
-          <Link className="ml-12" href="/home">
+          <Link className="ml-12" href="/organizer/host">
             <Button>Host a Hackathon</Button>
           </Link>
         </div>

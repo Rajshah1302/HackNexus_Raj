@@ -136,7 +136,7 @@ export default function AllHackathonsPage() {
   );
 
   const handleLearnMore = (hackAddr: string) => {
-    router.push(`/hackathons/${hackAddr}`);
+    router.push(`/h?chainId=${chainId}&hack=${hackAddr}`);
   };
 
   if (loading) {

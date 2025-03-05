@@ -9,6 +9,7 @@ import { writeContract } from "@wagmi/core";
 import { toast } from "@/components/ui/use-toast";
 import { Header } from "@/components/Header";
 import { HackNexusAbi } from "@/utlis/contractsABI/HackNexusAbi";
+import { config } from "@/utlis/config";
 
 interface UploadProject {
   projectName: string;
@@ -39,12 +40,11 @@ export function UploadProject({ hackAddress, chainId }: UploadProjectProps) {
       }
 
       // Call the mint function on the HackNexus contract using the passed-in props
-      const tx = await writeContract({
-        address: hackAddress,
+      const tx = await writeContract(config,{
+        address: hackAddress as `0x${string}`,
         abi: HackNexusAbi,
         functionName: "mint",
         args: [data.projectName, data.githubLink, data.demoVideoLink],
-        chainId: chainId,
       });
 
       console.log("Transaction:", tx);

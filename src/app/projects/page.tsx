@@ -12,5 +12,5 @@ export default function ProjectDetailPage() {
   const chainId = chainIdParam ? Number(chainIdParam) : 0;
   // console.log(hackAddress, chainId);
 
-  return <ProjectDetails hackAddress={hackAddress} chainId={chainId} />;
+  return <ProjectDetails hackAddress={hackAddress} chainId={chainId} tokenId={1}/>;
 }

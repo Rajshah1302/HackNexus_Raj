@@ -198,7 +198,7 @@ export function UploadProject({ hackAddress, chainId }: UploadProjectProps) {
             transition-colors
           "
         >
-          {loading ? "Submitting..." : "Submit Project"}
+          {loading ? "Minting..." : "Mint Exclusive NFT"}
         </Button>
 
         {submitStatus && (

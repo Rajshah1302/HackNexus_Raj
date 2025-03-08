@@ -73,17 +73,13 @@ export const Hero = () => {
       ></motion.div>
 
       <div className="container relative text-center">
-        <p className="font-caudex text-4xl max-w-xl mx-auto text-blue-300 mb-5 tracking-tight italic">
-          ✨ Privacy-preserving NFTs for a connected world ✨
-        </p>
         <div className="flex items-center justify-center space-x-4">
           <h1 className="font-caudex text-10xl md:text-[120px] md:leading-none tracking-tighter bg-gradient-to-br from-[#60A5FA] via-[#3B82F6] to-[#2563EB] text-transparent bg-clip-text pb-4">
             HackNexus
           </h1>
         </div>
         <p className="font-caudex text-4xl max-w-2xl mx-auto text-blue-400 mt-5 tracking-tight">
-          Mint NFTs securely based on your location, powered by zero-knowledge
-          proofs
+        Mint proof-of-atendance NFTs for hackathons
         </p>
         <div className="flex justify-center mt-7">
           <Link href="/home">

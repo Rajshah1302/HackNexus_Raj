@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { Github } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -198,7 +197,6 @@ export function ProjectDetails({
             </CardContent>
           </Card>
 
-          {/* Demo Video */}
           <Card className="border-slate-800 bg-slate-900">
             <CardHeader>
               <CardTitle className="text-xl font-semibold">
@@ -219,7 +217,6 @@ export function ProjectDetails({
             </CardContent>
           </Card>
 
-          {/* GitHub Link */}
           <Card className="border-slate-800 bg-slate-900/50">
             <CardContent className="p-6">
               <Button
@@ -233,8 +230,8 @@ export function ProjectDetails({
             </CardContent>
           </Card>
 
-          {/* ChatBot or Extra Component */}
         </div>
+        
       </div>
     </div>
   );

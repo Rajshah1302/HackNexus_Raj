@@ -5,13 +5,12 @@ import { useAccount } from "wagmi";
 import { getPublicClient } from "@wagmi/core";
 import { useRouter } from "next/navigation";
 
-// If you're using lucide-react icons, import the arrow icon:
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight, Calendar, MapPin, Zap } from "lucide-react";
+import Link from "next/link";
 
-// If you're using shadcn's Card components, keep them imported:
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { HackNexusFactoryAbi } from "@/utlis/contractsABI/HackNexusFactoryAbi";
 import { HackNexusAbi } from "@/utlis/contractsABI/HackNexusAbi";
@@ -26,16 +25,112 @@ interface HackathonData {
   longitude: string;
 }
 
+// Props for our neon-styled event card
+interface EventCardProps {
+  hack: HackathonData;
+  isPast?: boolean;
+  glowIntensity: number;
+  color: string; // gradient color from e.g. "from-blue-600 to-purple-600"
+  onLearnMore: (addr: string) => void;
+}
+
+function EventCard({
+  hack,
+  isPast,
+  glowIntensity,
+  color,
+  onLearnMore,
+}: EventCardProps) {
+  // We’re labeling everything as "HACKATHON" by default.
+  // If you store event types on-chain, adjust accordingly.
+  const eventType = "HACKATHON";
+
+  return (
+    <div
+      className={`group border-0 bg-gray-900/30 backdrop-blur-sm overflow-hidden relative transition-transform duration-300 hover:-translate-y-1 ${
+        isPast ? "opacity-70" : ""
+      }`}
+      style={{
+        boxShadow: `0 0 ${10 * glowIntensity}px rgba(139, 92, 246, 0.4)`,
+        transition: "all 0.3s ease-in-out",
+      }}
+    >
+      <div
+        className={`absolute inset-0 bg-gradient-to-r ${color} opacity-20 group-hover:opacity-30 transition-opacity`}
+      ></div>
+      <div
+        className={`absolute top-0 left-0 w-1 h-full bg-gradient-to-b ${color}`}
+      ></div>
+
+      <CardContent className="p-6 relative z-10">
+        <Badge
+          className={`bg-gradient-to-r ${color} border-0 mb-3`}
+          style={{
+            boxShadow: `0 0 ${5 * glowIntensity}px rgba(139, 92, 246, 0.5)`,
+            transition: "box-shadow 0.3s ease-in-out",
+          }}
+        >
+          {eventType}
+        </Badge>
+
+        <h3 className="text-xl font-bold mb-2">{hack.hackathonName}</h3>
+
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center gap-2 text-sm text-gray-300">
+            <Calendar className="h-4 w-4" />
+            {hack.hackathonDate}
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-300">
+            <MapPin className="h-4 w-4" />
+            <span className="font-mono">
+              {hack.latitude}, {hack.longitude}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-800">
+          <div className="text-sm text-gray-400">
+            {/* If you had a prize from the contract, display it here. */}
+            {/* <p>Prize Pool</p>
+            <p className="font-bold">$50,000</p> */}
+          </div>
+          <button
+            onClick={() => onLearnMore(hack.address)}
+            className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors"
+          >
+            Learn More
+            <ArrowRight className="h-5 w-5" />
+          </button>
+        </div>
+      </CardContent>
+    </div>
+  );
+}
+
 export default function AllHackathonsPage() {
   const router = useRouter();
   const { address: userAddress } = useAccount();
 
+  // Glow intensity for neon effect
+  const [glowIntensity, setGlowIntensity] = useState(1);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGlowIntensity(0.8 + Math.random() * 0.4);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const [activeTab, setActiveTab] = useState("all");
+
+  // Hackathons from your contract
   const [hackathons, setHackathons] = useState<HackathonData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const chainId = config.state.chainId;
 
+  // Fetch hackathons from contract
   const fetchHackathons = async () => {
     try {
       if (!userAddress) return;
@@ -44,7 +139,6 @@ export default function AllHackathonsPage() {
       setError(null);
 
       const publicClient = getPublicClient(config as any, { chainId });
-
       const hackathonAddresses = (await publicClient.readContract({
         address: HackNexusFactoryAddress[chainId] as `0x${string}`,
         abi: HackNexusFactoryAbi,
@@ -54,29 +148,29 @@ export default function AllHackathonsPage() {
 
       const hackathonDataPromises = hackathonAddresses.map(async (hackAddr) => {
         try {
-          const hackathonName = (await publicClient.readContract({
-            address: hackAddr,
-            abi: HackNexusAbi,
-            functionName: "hackathonName",
-          })) as string;
-
-          const hackathonDate = (await publicClient.readContract({
-            address: hackAddr,
-            abi: HackNexusAbi,
-            functionName: "hackathonDate",
-          })) as string;
-
-          const latitude = (await publicClient.readContract({
-            address: hackAddr,
-            abi: HackNexusAbi,
-            functionName: "latitude",
-          })) as string;
-
-          const longitude = (await publicClient.readContract({
-            address: hackAddr,
-            abi: HackNexusAbi,
-            functionName: "longitude",
-          })) as string;
+          const [hackathonName, hackathonDate, latitude, longitude] =
+            (await Promise.all([
+              publicClient.readContract({
+                address: hackAddr,
+                abi: HackNexusAbi,
+                functionName: "hackathonName",
+              }),
+              publicClient.readContract({
+                address: hackAddr,
+                abi: HackNexusAbi,
+                functionName: "hackathonDate",
+              }),
+              publicClient.readContract({
+                address: hackAddr,
+                abi: HackNexusAbi,
+                functionName: "latitude",
+              }),
+              publicClient.readContract({
+                address: hackAddr,
+                abi: HackNexusAbi,
+                functionName: "longitude",
+              }),
+            ])) as [string, string, string, string];
 
           return {
             address: hackAddr,
@@ -116,7 +210,8 @@ export default function AllHackathonsPage() {
   const now = new Date();
   const upcomingHackathons = hackathons.filter((hack) => {
     const hackDate = new Date(hack.hackathonDate);
-    if (isNaN(hackDate.getTime())) return true; // treat invalid date as upcoming
+    // If hackathonDate is not a valid date, treat as upcoming
+    if (isNaN(hackDate.getTime())) return true;
     return hackDate >= now;
   });
   const pastHackathons = hackathons.filter((hack) => {
@@ -125,7 +220,7 @@ export default function AllHackathonsPage() {
     return hackDate < now;
   });
 
-  // Sort them
+  // Sort upcoming ascending, past descending
   upcomingHackathons.sort(
     (a, b) =>
       new Date(a.hackathonDate).getTime() - new Date(b.hackathonDate).getTime()
@@ -135,154 +230,129 @@ export default function AllHackathonsPage() {
       new Date(b.hackathonDate).getTime() - new Date(a.hackathonDate).getTime()
   );
 
+  // Navigate to the detail page
   const handleLearnMore = (hackAddr: string) => {
-    router.push(`/hackathons/${hackAddr}`);
+    router.push(`/h?chainId=${chainId}&hack=${hackAddr}`);
   };
+
+  // Cycle through a few gradient color combos for the cards
+  const gradientColors = [
+    "from-blue-600 to-purple-600",
+    "from-pink-600 to-purple-600",
+    "from-indigo-600 to-blue-600",
+    "from-cyan-600 to-blue-600",
+    "from-purple-600 to-pink-600",
+  ];
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <p className="text-black">Loading hackathons...</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-blue-950 to-gray-950 text-white flex items-center justify-center">
+        <p className="text-gray-300">Loading hackathons...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white text-red-500">
-        {error}
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-blue-950 to-gray-950 text-white flex items-center justify-center">
+        <p className="text-red-500">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white text-black">
-      <div className="mx-auto max-w-7xl p-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-4">Events</h1>
-          <div className="flex space-x-6 text-lg">
-            <Button
-              variant="ghost"
-              className="px-0 text-black hover:bg-gray-100"
-            >
-              All
-            </Button>
-            <Button
-              variant="ghost"
-              className="px-0 text-black hover:bg-gray-100"
-            >
-              Hackathons
-            </Button>
-            <Button
-              variant="ghost"
-              className="px-0 text-black hover:bg-gray-100"
-            >
-              Summits
-            </Button>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-blue-950 to-gray-950 text-white">
+      <div className="max-w-6xl mx-auto px-4 py-12">
+        {/* Header */}
+        <div className="mb-12">
+          <h1
+            className="text-5xl md:text-6xl font-bold tracking-tighter mb-8"
+            style={{
+              textShadow: `0 0 ${5 * glowIntensity}px #4f46e5, 0 0 ${
+                10 * glowIntensity
+              }px #818cf8`,
+              transition: "text-shadow 1s ease-in-out",
+            }}
+          >
+            Events
+          </h1>
+
+          {/* Tabs */}
+          <Tabs
+            defaultValue="all"
+            className="w-full"
+            onValueChange={setActiveTab}
+          >
+            <TabsList className="bg-gray-900/50 border border-gray-800">
+              <TabsTrigger
+                value="all"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600"
+              >
+                All
+              </TabsTrigger>
+              <TabsTrigger
+                value="hackathons"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600"
+              >
+                Hackathons
+              </TabsTrigger>
+              <TabsTrigger
+                value="summits"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600"
+              >
+                Summits
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
-        {/* UPCOMING HACKATHONS */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold mb-4">Upcoming</h2>
+        {/* Upcoming Hackathons Section */}
+        <section className="mb-16">
+          <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+            <Zap className="h-5 w-5 text-purple-400" />
+            Upcoming
+          </h2>
+
           {upcomingHackathons.length === 0 ? (
-            <p className="text-gray-600">No upcoming hackathons</p>
+            <p className="text-gray-300">No upcoming hackathons</p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {upcomingHackathons.map((hack) => (
-                <Card
-                  key={hack.address}
-                  className="border border-black rounded-lg p-4 bg-white"
-                >
-                  <CardHeader className="p-0">
-                    <div className="flex items-center justify-between">
-                      <Label className="px-2 py-1 bg-[#E2F8E7] text-[#10743F] text-xs rounded-full font-medium">
-                        HACKATHON
-                      </Label>
-                      {/* You could add a logo/icon on the right if you want */}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-0 mt-4">
-                    <CardTitle className="text-lg font-bold">
-                      {hack.hackathonName}
-                    </CardTitle>
-                    {/* Example: If you have a start & end date separately, display them. 
-                        Otherwise, just show hack.hackathonDate directly. */}
-                    <div className="mt-2 inline-flex items-center space-x-2">
-                      <div className="flex items-center space-x-1 bg-[#F5F5F5] rounded-md px-2 py-1 text-sm">
-                        <span>{hack.hackathonDate}</span>
-                      </div>
-                      {/* If you had "startDate -> endDate" you could do something like:
-                          <span className="text-sm text-gray-500">→</span>
-                          <div className="flex items-center space-x-1 bg-[#F5F5F5] ...">
-                            <span>END DATE</span>
-                          </div>
-                      */}
-                    </div>
-
-                    {/* Coordinates (latitude, longitude) if you want to display them */}
-                    <p className="text-sm text-gray-800 mt-2">
-                      {hack.latitude}, {hack.longitude}
-                    </p>
-
-                    {/* Learn More button at bottom */}
-                    <button
-                      onClick={() => handleLearnMore(hack.address)}
-                      className="mt-4 w-full flex items-center justify-between 
-                                 bg-[#FAEAD5] hover:bg-[#f5e0c3] 
-                                 rounded-md px-3 py-2 text-sm font-medium 
-                                 text-black transition"
-                    >
-                      Learn More
-                      <ArrowUpRight className="w-4 h-4" />
-                    </button>
-                  </CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {upcomingHackathons.map((hack, idx) => (
+                <Card key={hack.address} className="shadow-none">
+                  <EventCard
+                    hack={hack}
+                    isPast={false}
+                    glowIntensity={glowIntensity}
+                    color={gradientColors[idx % gradientColors.length]}
+                    onLearnMore={handleLearnMore}
+                  />
                 </Card>
               ))}
             </div>
           )}
         </section>
 
-        {/* PAST HACKATHONS */}
+        {/* Past Hackathons Section */}
         <section>
-          <h2 className="text-xl font-bold mb-4">Past</h2>
+          <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-purple-400" />
+            Past
+          </h2>
+
           {pastHackathons.length === 0 ? (
-            <p className="text-gray-600">No past hackathons</p>
+            <p className="text-gray-300">No past hackathons</p>
           ) : (
-            <div className="space-y-4">
-              {pastHackathons.map((hack) => (
-                <div
-                  key={hack.address}
-                  className="border border-black rounded-lg p-4 bg-white"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="font-semibold text-lg">
-                      {hack.hackathonName}
-                    </p>
-                    <Label className="px-2 py-1 bg-[#F5F5F5] text-black text-xs rounded-full font-medium">
-                      HACKATHON
-                    </Label>
-                  </div>
-                  <p className="text-sm text-gray-700 mb-2">
-                    {hack.hackathonDate}
-                  </p>
-                  <p className="text-sm text-gray-700">
-                    {hack.latitude}, {hack.longitude}
-                  </p>
-                  <div className="mt-4 flex items-center justify-end">
-                    <button
-                      onClick={() => handleLearnMore(hack.address)}
-                      className="inline-flex items-center justify-between 
-                                 bg-[#FAEAD5] hover:bg-[#f5e0c3] 
-                                 rounded-md px-3 py-2 text-sm font-medium 
-                                 text-black transition"
-                    >
-                      View Details
-                      <ArrowUpRight className="w-4 h-4 ml-2" />
-                    </button>
-                  </div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {pastHackathons.map((hack, idx) => (
+                <Card key={hack.address} className="shadow-none">
+                  <EventCard
+                    hack={hack}
+                    isPast
+                    glowIntensity={glowIntensity}
+                    color={gradientColors[idx % gradientColors.length]}
+                    onLearnMore={handleLearnMore}
+                  />
+                </Card>
               ))}
             </div>
           )}

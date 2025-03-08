@@ -14,17 +14,19 @@ contract HackNexus is ERC721, Ownable {
     string public latitude;
     string public longitude;
     string public totalPrizePool;
-
     string public imageURL;
 
     uint256 public tokenCounter;
 
-    struct Links {
+    struct Details {
+        string projectName; 
         string github;
         string youtube;
     }
 
-    mapping(uint256 => Links) public tokenLinks;
+    mapping(uint256 => Details) public tokenDetails;
+    // New mapping: userAddress to tokenId
+    mapping(address => uint256) public userToToken;
 
     struct Track {
         string name;
@@ -61,11 +63,12 @@ contract HackNexus is ERC721, Ownable {
     }
 
     /// @notice Mints a new NFT for the participant.
-    function mint(string memory _githubLink, string memory _youtubeLink) external {
+    function mint(string memory _projectName, string memory _githubLink, string memory _youtubeLink) external {
         tokenCounter++;
         uint256 tokenId = tokenCounter;
         _safeMint(msg.sender, tokenId);
-        tokenLinks[tokenId] = Links(_githubLink, _youtubeLink);
+        tokenDetails[tokenId] = Details(_projectName, _githubLink, _youtubeLink);
+        userToToken[msg.sender] = tokenId;
     }
 
     function _baseURI() internal pure override returns (string memory) {

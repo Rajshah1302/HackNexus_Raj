@@ -77,8 +77,8 @@ export const Hero = () => {
           ✨ Privacy-preserving NFTs for a connected world ✨
         </p>
         <div className="flex items-center justify-center space-x-4">
-          <h1 className="font-caudex text-10xl md:text-[180px] md:leading-none tracking-tighter bg-gradient-to-br from-[#60A5FA] via-[#3B82F6] to-[#2563EB] text-transparent bg-clip-text pb-4">
-            Nexus
+          <h1 className="font-caudex text-10xl md:text-[120px] md:leading-none tracking-tighter bg-gradient-to-br from-[#60A5FA] via-[#3B82F6] to-[#2563EB] text-transparent bg-clip-text pb-4">
+            HackNexus
           </h1>
         </div>
         <p className="font-caudex text-4xl max-w-2xl mx-auto text-blue-400 mt-5 tracking-tight">
@@ -89,7 +89,7 @@ export const Hero = () => {
           <Link href="/home">
             <Button>Explore Nexus</Button>
           </Link>
-          <Link className="ml-12" href="/home">
+          <Link className="ml-12" href="/organizer/host">
             <Button>Host a Hackathon</Button>
           </Link>
         </div>

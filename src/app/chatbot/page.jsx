@@ -38,18 +38,21 @@ export default function ChatPage({ repo }) {
     }));
 
     try {
-      const response = await axios.post("http://localhost:4000/api/chat", {
-        repoUrl: state.repoUrl,
-        userInput: state.userInput,
-        chatHistory: [...state.chatHistory, newMessage],
-      });
+      const response = await axios.post(
+        "http://localhost:4000/submissions/project-chat",
+        {
+          repoUrl: state.repoUrl,
+          userInput: state.userInput,
+          chatHistory: [...state.chatHistory, newMessage],
+        }
+      );
+
+      const assistantResponse =
+        response.data?.response?.choices?.[0]?.message?.content || "No response received.";
 
       setState((prev) => ({
         ...prev,
-        chatHistory: [
-          ...prev.chatHistory,
-          { role: "assistant", content: response.data.assistantResponse },
-        ],
+        chatHistory: [...prev.chatHistory, { role: "assistant", content: assistantResponse }],
         isLoading: false,
       }));
     } catch (error) {

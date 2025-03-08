@@ -78,9 +78,12 @@ export const Hero = () => {
             HackNexus
           </h1>
         </div>
-        <p className="font-caudex text-4xl max-w-2xl mx-auto text-blue-400 mt-5 tracking-tight">
-        Mint proof-of-atendance NFTs for hackathons
+        <p className="font-caudex text-2xl max-w-3xl mx-auto text-blue-300 mt-6 tracking-tight text-center leading-relaxed">
+          Mint proof-of-attendance NFTs for hackathons or
+          <br className="hidden sm:inline" /> organize hackathons — all in one
+          place.
         </p>
+
         <div className="flex justify-center mt-7">
           <Link href="/home">
             <Button>Explore Nexus</Button>

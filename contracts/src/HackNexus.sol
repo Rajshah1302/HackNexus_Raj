@@ -14,7 +14,6 @@ contract HackNexus is ERC721, Ownable {
     string public latitude;
     string public longitude;
     string public totalPrizePool;
-
     string public imageURL;
 
     uint256 public tokenCounter;
@@ -26,6 +25,8 @@ contract HackNexus is ERC721, Ownable {
     }
 
     mapping(uint256 => Details) public tokenDetails;
+    // New mapping: userAddress to tokenId
+    mapping(address => uint256) public userToToken;
 
     struct Track {
         string name;
@@ -67,6 +68,7 @@ contract HackNexus is ERC721, Ownable {
         uint256 tokenId = tokenCounter;
         _safeMint(msg.sender, tokenId);
         tokenDetails[tokenId] = Details(_projectName, _githubLink, _youtubeLink);
+        userToToken[msg.sender] = tokenId;
     }
 
     function _baseURI() internal pure override returns (string memory) {

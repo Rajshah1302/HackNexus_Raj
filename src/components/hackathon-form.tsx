@@ -10,6 +10,7 @@ import { HackNexusFactoryAbi } from "@/utlis/contractsABI/HackNexusFactoryAbi";
 import { HackNexusFactoryAddress } from "@/utlis/addresses";
 import { toast } from "@/components/ui/use-toast";
 import { config } from "@/utlis/config";
+import { useRouter } from "next/navigation";
 
 interface HackathonFormData {
   name: string;
@@ -43,6 +44,8 @@ export function HackathonForm() {
 
   const [submitStatus, setSubmitStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
 
   const onSubmit = async (data: HackathonFormData) => {
     setLoading(true);
@@ -82,6 +85,7 @@ export function HackathonForm() {
         title: "Success",
         description: "Hackathon created successfully!",
       });
+      router.push("/organizer/MyHacks");
     } catch (error: any) {
       console.error("Error creating hackathon:", error);
       setSubmitStatus("Error creating hackathon.");

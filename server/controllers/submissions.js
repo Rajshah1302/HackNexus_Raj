@@ -1,5 +1,6 @@
 const { generateAIResponse } = require("../utils/agent");
 const { fetchProject } = require("../utils/fetchProject");
+const prompts = require("../utils/prompts");
 
 const projectChatController = async (req, res) => {
   try {
@@ -24,10 +25,7 @@ const projectChatController = async (req, res) => {
     }
 
     console.log("2. Generating AI response...");
-    const systemPrompt = `You are an AI assistant specializing in explaining GitHub projects based on their README files. 
-    Use the README content to provide clear, informative, and context-aware explanations of features, usage, and key details. 
-    By default, keep responses concise unless the user explicitly requests a detailed explanation. 
-    Ensure technical concepts are broken down in an easy-to-understand manner while maintaining accuracy. Respond in 50 to 100 words only`;
+    const systemPrompt = prompts.SUBMISSION_AGENT;
 
     const aiResponse = await generateAIResponse(
       `${projectReadme}\nUser Query: ${userInput}`,
